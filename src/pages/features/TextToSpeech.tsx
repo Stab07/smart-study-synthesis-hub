@@ -8,17 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { toast } from "@/components/ui/sonner";
 import MainLayout from '@/components/layout/MainLayout';
+import { supabase } from '@/integrations/supabase/client';
 
 const TextToSpeech = () => {
   const [ttsText, setTtsText] = useState('');
   const [ttsLoading, setTtsLoading] = useState(false);
+  const [audioSrc, setAudioSrc] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(100);
   
   // Handle TTS conversion
-  const handleTextToSpeech = () => {
+  const handleTextToSpeech = async () => {
     if (!ttsText.trim()) {
       toast("Please enter some text to convert to speech");
       return;
@@ -26,33 +26,26 @@ const TextToSpeech = () => {
     
     setTtsLoading(true);
     
-    // Simulate API call for demo purposes
-    setTimeout(() => {
-      setTtsLoading(false);
-      toast.success("Text converted to speech successfully!");
-      // In a real implementation, you would get an audio URL from your API
-      // and set it to the audio element's src
-      setIsPlaying(true);
-    }, 2000);
-  };
-  
-  // Handle audio playback controls
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-  
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0]);
-  };
-  
-  const handleSeek = (value: number[]) => {
-    setCurrentTime(value[0]);
-  };
+    try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: JSON.stringify({ text: ttsText, voice: 'alloy' })
+      });
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      if (error) throw error;
+
+      // Create audio from base64
+      const audioBlob = new Blob([Buffer.from(data.audioContent, 'base64')], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      setAudioSrc(audioUrl);
+      setIsPlaying(true);
+      toast.success("Text converted to speech successfully!");
+    } catch (error) {
+      console.error('Text to Speech Error:', error);
+      toast.error("Failed to convert text to speech");
+    } finally {
+      setTtsLoading(false);
+    }
   };
   
   return (
@@ -84,48 +77,37 @@ const TextToSpeech = () => {
                 onChange={(e) => setTtsText(e.target.value)}
               />
               
-              {/* Audio Player (shows after conversion) */}
-              {isPlaying && (
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mt-4">
-                  <div className="flex flex-col space-y-2">
+              {audioSrc && (
+                <div>
+                  <audio 
+                    src={audioSrc} 
+                    ref={(audio) => {
+                      if (audio) {
+                        isPlaying ? audio.play() : audio.pause();
+                      }
+                    }}
+                  />
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatTime(currentTime)}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatTime(duration)}</span>
-                    </div>
-                    
-                    <Slider
-                      value={[currentTime]}
-                      max={duration}
-                      step={0.1}
-                      onValueChange={handleSeek}
-                      className="w-full"
-                    />
-                    
-                    <div className="flex items-center justify-between">
+                      <Button 
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        variant="outline"
+                      >
+                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
                       <div className="flex items-center space-x-2">
-                        <Volume2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                        <Volume2 className="h-4 w-4" />
                         <Slider
                           value={[volume]}
                           max={1}
                           step={0.01}
-                          onValueChange={handleVolumeChange}
+                          onValueChange={(value) => {
+                            setVolume(value[0]);
+                            const audioElement = document.querySelector('audio');
+                            if (audioElement) audioElement.volume = value[0];
+                          }}
                           className="w-20"
                         />
-                      </div>
-                      
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full p-2"
-                        onClick={handlePlayPause}
-                      >
-                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      </Button>
-                      
-                      <div className="flex items-center">
-                        <Badge variant="outline" className="flex items-center">
-                          1.0x
-                        </Badge>
                       </div>
                     </div>
                   </div>

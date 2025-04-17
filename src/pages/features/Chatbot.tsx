@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MainLayout from '@/components/layout/MainLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/sonner";
 
 const Chatbot = () => {
   const [chatMessage, setChatMessage] = useState('');
@@ -15,34 +17,36 @@ const Chatbot = () => {
   const [chatLoading, setChatLoading] = useState(false);
   
   // Handle sending a chat message
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!chatMessage.trim()) return;
     
     // Add user message
     const userMsg = chatMessage.trim();
-    setChatMessages(prev => [...prev, { sender: 'user', message: userMsg }]);
+    const updatedMessages = [...chatMessages, { sender: 'user', message: userMsg }];
+    setChatMessages(updatedMessages);
     setChatMessage('');
     setChatLoading(true);
     
-    // Simulate API call for demo purposes
-    setTimeout(() => {
-      let response = "";
-      
-      if (userMsg.toLowerCase().includes('summarize') || userMsg.toLowerCase().includes('summary')) {
-        response = "I can help summarize your documents! Simply upload a document or paste text, and I'll create a concise summary highlighting the key points.";
-      } else if (userMsg.toLowerCase().includes('speak') || userMsg.toLowerCase().includes('audio') || userMsg.toLowerCase().includes('voice')) {
-        response = "With SpeakSmart AI, you can convert any text to natural-sounding speech. Perfect for listening to documents on the go!";
-      } else if (userMsg.toLowerCase().includes('math') || userMsg.toLowerCase().includes('equation')) {
-        response = "SpeakSmart AI can recognize and explain mathematical concepts in your documents. It identifies equations and provides step-by-step explanations.";
-      } else {
-        response = "Thanks for your message! SpeakSmart AI helps students learn more effectively through AI-powered summarization, text-to-speech conversion, math interpretation, and conversational assistance. How can I assist you today?";
-      }
-      
-      setChatMessages(prev => [...prev, { sender: 'bot', message: response }]);
+    try {
+      const { data, error } = await supabase.functions.invoke('chatbot', {
+        body: JSON.stringify({ messages: updatedMessages.map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.message
+        })) })
+      });
+
+      if (error) throw error;
+
+      const botResponse = data.message;
+      setChatMessages(prev => [...prev, { sender: 'bot', message: botResponse }]);
+    } catch (error) {
+      console.error('Chatbot Error:', error);
+      toast.error("Failed to get chatbot response");
+    } finally {
       setChatLoading(false);
-    }, 1500);
+    }
   };
   
   return (
@@ -52,7 +56,7 @@ const Chatbot = () => {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">AI Chatbot</h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Ask questions about your documents and get instant answers from our intelligent AI assistant
+              Ask questions and get instant answers from our intelligent AI assistant
             </p>
           </div>
           
@@ -63,7 +67,7 @@ const Chatbot = () => {
                 AI Chatbot
               </CardTitle>
               <CardDescription>
-                Ask questions about your documents and get instant answers from our intelligent AI assistant.
+                Ask questions and get instant answers from our intelligent AI assistant.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -90,11 +94,7 @@ const Chatbot = () => {
                     {chatLoading && (
                       <div className="flex justify-start">
                         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
-                          <div className="flex space-x-1">
-                            <div className="h-2 w-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce delay-0"></div>
-                            <div className="h-2 w-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce delay-150"></div>
-                            <div className="h-2 w-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce delay-300"></div>
-                          </div>
+                          <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
                         </div>
                       </div>
                     )}
@@ -105,7 +105,7 @@ const Chatbot = () => {
                   <Input
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
-                    placeholder="Ask a question about your document..."
+                    placeholder="Ask a question..."
                     disabled={chatLoading}
                     className="flex-1"
                   />
