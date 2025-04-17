@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, MessageSquare, X, BookOpen, Calculator, Download, Share2, Clock, Bookmark, Loader2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, MessageSquare, X, BookOpen, Calculator, Download, Share2, Clock, Bookmark, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
