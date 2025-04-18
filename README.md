@@ -1,71 +1,91 @@
 
-# SpeakSmart AI - Educational AI Tool
+# SpeakSmart AI - Educational AI Toolkit
 
-SpeakSmart AI is a comprehensive educational tool that helps students learn more effectively through AI-powered summarization, text-to-speech conversion, math interpretation, and conversational assistance.
+## 🚀 Project Overview
 
-## Features
+SpeakSmart AI is an advanced educational platform leveraging AI technologies to enhance learning through:
+- Document Summarization
+- Text-to-Speech Conversion
+- Math Interpretation
+- AI-Powered Chatbot
+- Multi-format Document Processing
 
-- **Document Summarization**: Extract key points from lengthy documents
-- **Text to Speech**: Convert text to natural-sounding audio
-- **Math Interpretation**: Recognize and explain mathematical concepts
-- **AI Chatbot**: Ask questions about your documents and get instant answers
-- **Multi-format Support**: Process PDFs, DOCs, PPTs, images, and more
+## 🛠 Prerequisites
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v14 or higher)
+- Node.js (v18 or higher)
 - npm or yarn
+- Supabase Account
+- OpenAI API Key
 
-### Installation
+## 📦 Installation
 
-1. Clone this repository
-```
+1. Clone the repository
+```bash
 git clone https://github.com/yourusername/speaksmart-ai.git
 cd speaksmart-ai
 ```
 
 2. Install dependencies
-```
+```bash
 npm install
 ```
 
-3. Start the development server
+3. Set up environment variables
+- Create a `.env` file in the root directory
+- Add your OpenAI API Key:
 ```
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+4. Configure Supabase
+- Click the Supabase button in the Lovable interface
+- Connect your Supabase project
+- Set up the required edge functions
+
+5. Start the development server
+```bash
 npm run dev
 ```
 
-## Project Structure
+## 🔧 Project Structure
+- `/src/components`: Reusable UI components
+- `/src/pages`: Main application pages
+- `/src/utils`: Utility functions
+- `supabase/functions`: Serverless edge functions
 
-- `/src/components` - Reusable UI components
-- `/src/pages` - Main application pages
-- `/src/hooks` - Custom React hooks
-- `/src/utils` - Utility functions and helpers
+## 🌟 Key Features
 
-## Backend Integration
+### Document Summarization
+- Supports multiple document formats
+- AI-powered text condensation
+- Preserves key information
 
-For full functionality, you'll need to integrate with:
+### Text-to-Speech
+- Multiple voice options
+- Customizable audio settings
+- High-quality speech synthesis
 
-1. **OpenAI/Hugging Face API** for summarization
-2. **Mathpix API** or SymPy for math interpretation
-3. **Coqui TTS** or Mozilla TTS for text-to-speech
-4. **LangChain** or RAG for chatbot functionality
+### AI Chatbot
+- Context-aware responses
+- Document-based knowledge retrieval
+- Natural language understanding
 
-## Future Roadmap
+### Math Interpretation
+- Image and text-based math solving
+- Step-by-step explanation
+- Multiple math domains support
 
-- Flashcard generation
-- Quiz mode
-- Notes-to-slide converter
-- Voice input for chatbot
+## 🚧 Future Roadmap
+- Enhanced ML models
+- More language support
+- Advanced study tools
 
-## License
+## 📄 License
+MIT License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Lucide Icons](https://lucide.dev/)
+## 🙏 Acknowledgements
+- React
+- Tailwind CSS
+- Supabase
+- OpenAI
+- LangChain
