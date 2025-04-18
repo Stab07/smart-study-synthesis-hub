@@ -4,7 +4,6 @@ import { Headphones, Loader2, Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { toast } from "@/components/ui/sonner";
 import MainLayout from '@/components/layout/MainLayout';
@@ -16,6 +15,7 @@ const TextToSpeech = () => {
   const [audioSrc, setAudioSrc] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
+  const [audioElem, setAudioElem] = useState<HTMLAudioElement | null>(null);
   
   // Handle TTS conversion
   const handleTextToSpeech = async () => {
@@ -34,17 +34,49 @@ const TextToSpeech = () => {
       if (error) throw error;
 
       // Create audio from base64
-      const audioBlob = new Blob([Buffer.from(data.audioContent, 'base64')], { type: 'audio/mp3' });
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], 
+        { type: 'audio/mp3' }
+      );
       const audioUrl = URL.createObjectURL(audioBlob);
       
       setAudioSrc(audioUrl);
+      
+      // Create and play audio element
+      const audio = new Audio(audioUrl);
+      audio.volume = volume;
+      setAudioElem(audio);
+      
+      audio.onended = () => setIsPlaying(false);
+      audio.play();
       setIsPlaying(true);
+      
       toast.success("Text converted to speech successfully!");
     } catch (error) {
       console.error('Text to Speech Error:', error);
       toast.error("Failed to convert text to speech");
     } finally {
       setTtsLoading(false);
+    }
+  };
+  
+  const togglePlayPause = () => {
+    if (!audioElem) return;
+    
+    if (isPlaying) {
+      audioElem.pause();
+      setIsPlaying(false);
+    } else {
+      audioElem.play();
+      setIsPlaying(true);
+    }
+  };
+  
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setVolume(newVolume);
+    if (audioElem) {
+      audioElem.volume = newVolume;
     }
   };
   
@@ -78,37 +110,23 @@ const TextToSpeech = () => {
               />
               
               {audioSrc && (
-                <div>
-                  <audio 
-                    src={audioSrc} 
-                    ref={(audio) => {
-                      if (audio) {
-                        isPlaying ? audio.play() : audio.pause();
-                      }
-                    }}
-                  />
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mt-4">
-                    <div className="flex items-center justify-between">
-                      <Button 
-                        onClick={() => setIsPlaying(!isPlaying)}
-                        variant="outline"
-                      >
-                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      </Button>
-                      <div className="flex items-center space-x-2">
-                        <Volume2 className="h-4 w-4" />
-                        <Slider
-                          value={[volume]}
-                          max={1}
-                          step={0.01}
-                          onValueChange={(value) => {
-                            setVolume(value[0]);
-                            const audioElement = document.querySelector('audio');
-                            if (audioElement) audioElement.volume = value[0];
-                          }}
-                          className="w-20"
-                        />
-                      </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-between">
+                    <Button 
+                      onClick={togglePlayPause}
+                      variant="outline"
+                    >
+                      {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <Volume2 className="h-4 w-4" />
+                      <Slider
+                        value={[volume]}
+                        max={1}
+                        step={0.01}
+                        onValueChange={handleVolumeChange}
+                        className="w-20"
+                      />
                     </div>
                   </div>
                 </div>

@@ -9,9 +9,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/sonner";
 
+type ChatMessage = {
+  sender: 'user' | 'bot';
+  message: string;
+};
+
 const Chatbot = () => {
   const [chatMessage, setChatMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState<{ sender: 'user' | 'bot', message: string }[]>([
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { sender: 'bot', message: 'Hi there! I\'m your SpeakSmart AI assistant. How can I help you today?' }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -31,14 +36,17 @@ const Chatbot = () => {
     
     try {
       const { data, error } = await supabase.functions.invoke('chatbot', {
-        body: JSON.stringify({ messages: updatedMessages.map(msg => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.message
-        })) })
+        body: JSON.stringify({ 
+          messages: updatedMessages.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.message
+          })) 
+        })
       });
 
       if (error) throw error;
 
+      // Add the bot response to chat messages
       const botResponse = data.message;
       setChatMessages(prev => [...prev, { sender: 'bot', message: botResponse }]);
     } catch (error) {

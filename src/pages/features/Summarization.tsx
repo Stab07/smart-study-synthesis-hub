@@ -29,8 +29,12 @@ const Summarization = () => {
 
       if (error) throw error;
 
-      setSummary(data.summary);
-      toast.success("Text summarized successfully!");
+      if (data.summary) {
+        setSummary(data.summary);
+        toast.success("Text summarized successfully!");
+      } else {
+        throw new Error("No summary received from API");
+      }
     } catch (error) {
       console.error('Summarization Error:', error);
       toast.error("Failed to summarize text");

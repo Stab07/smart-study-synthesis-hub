@@ -19,6 +19,8 @@ serve(async (req) => {
       throw new Error('Conversation history is required');
     }
 
+    console.log('Processing chat request with messages:', JSON.stringify(messages).slice(0, 100) + '...');
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -39,14 +41,23 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
     const data = await response.json();
     const botResponse = data.choices[0].message.content.trim();
+
+    console.log('Generated response:', botResponse.slice(0, 100) + '...');
 
     return new Response(
       JSON.stringify({ message: botResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('Chatbot Error:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
