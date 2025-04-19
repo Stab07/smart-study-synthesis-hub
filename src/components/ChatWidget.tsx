@@ -29,15 +29,15 @@ export const ChatWidget = () => {
     
     if (!chatMessage.trim()) return;
     
-    const userMsg = chatMessage.trim();
-    setChatMessages(prev => [...prev, { sender: 'user', message: userMsg }]);
+    const userMsg: ChatMessage = { sender: 'user', message: chatMessage.trim() };
+    setChatMessages(prev => [...prev, userMsg]);
     setChatMessage('');
     setChatLoading(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('chatbot', {
         body: JSON.stringify({ 
-          messages: [...chatMessages, { sender: 'user', message: userMsg }].map(msg => ({
+          messages: [...chatMessages, userMsg].map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
             content: msg.message
           }))
@@ -46,7 +46,8 @@ export const ChatWidget = () => {
 
       if (error) throw error;
 
-      setChatMessages(prev => [...prev, { sender: 'bot', message: data.message }]);
+      const botResponse: ChatMessage = { sender: 'bot', message: data.message };
+      setChatMessages(prev => [...prev, botResponse]);
     } catch (error) {
       console.error('Chatbot Error:', error);
       toast.error("Failed to get chatbot response");
@@ -72,7 +73,7 @@ export const ChatWidget = () => {
   return (
     <div className={`fixed bottom-6 right-6 z-50 ${chatOpen ? 'w-80 sm:w-96' : 'w-auto'}`}>
       {chatOpen ? (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden flex flex-col h-96">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg overflow-hidden flex flex-col h-96 fixed right-6 bottom-6 w-80 sm:w-96">
           <div className="bg-brand-500 text-white px-4 py-3 flex justify-between items-center">
             <h3 className="text-sm font-medium">AI Assistant</h3>
             <button 
@@ -137,7 +138,7 @@ export const ChatWidget = () => {
         <Button
           onClick={() => setChatOpen(true)}
           size="icon"
-          className="w-12 h-12 rounded-full shadow-lg"
+          className="fixed bottom-6 right-6 w-12 h-12 rounded-full shadow-lg"
         >
           <MessageSquare className="h-5 w-5" />
         </Button>
