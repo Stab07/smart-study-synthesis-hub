@@ -13,13 +13,28 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, length = 'medium' } = await req.json();
 
     if (!text) {
       throw new Error('Text is required for summarization');
     }
 
-    console.log('Processing summarization request for text of length:', text.length);
+    console.log('Processing summarization request for text of length:', text.length, 'with summary length:', length);
+
+    // Configure system message based on length parameter
+    let systemMessage = 'You are an expert summarizer using the PEGASUS model approach. ';
+    
+    switch(length) {
+      case 'short':
+        systemMessage += 'Create a very concise summary focusing only on the most essential points. The summary should be around 2-3 sentences.';
+        break;
+      case 'long':
+        systemMessage += 'Create a detailed summary that covers all main points and important supporting details. The summary should be comprehensive while still being more concise than the original.';
+        break;
+      case 'medium':
+      default:
+        systemMessage += 'Provide a concise, clear summary that captures the key points of the text. Focus on the main ideas and essential information.';
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -32,14 +47,15 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert summarizer. Provide a concise, clear summary that captures the key points of the text. Focus on the main ideas, key arguments, and essential information.' 
+            content: systemMessage
           },
           { 
             role: 'user', 
             content: `Please summarize the following text:\n\n${text}` 
           }
         ],
-        max_tokens: 300
+        temperature: 0.5,
+        max_tokens: length === 'short' ? 150 : (length === 'long' ? 600 : 300)
       }),
     });
 

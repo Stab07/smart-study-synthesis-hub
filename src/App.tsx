@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Upload from "./pages/Upload";
 import Results from "./pages/Results";
 import Features from "./pages/Features";
+import AITools from "./pages/AITools";
 import TextToSpeech from "./pages/features/TextToSpeech";
 import Summarization from "./pages/features/Summarization";
 import Chatbot from "./pages/features/Chatbot";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/upload" element={<Upload />} />
           <Route path="/results/:docId" element={<Results />} />
           <Route path="/features" element={<Features />} />
+          <Route path="/ai-tools" element={<AITools />} />
           <Route path="/features/text-to-speech" element={<TextToSpeech />} />
           <Route path="/features/summarization" element={<Summarization />} />
           <Route path="/features/chatbot" element={<Chatbot />} />

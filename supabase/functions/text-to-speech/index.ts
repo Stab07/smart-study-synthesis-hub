@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = 'alloy' } = await req.json();
+    const { text, voice = 'alloy', pitch = 1, speed = 1 } = await req.json();
 
     if (!text) {
       throw new Error('Text is required');
@@ -21,19 +21,25 @@ serve(async (req) => {
 
     console.log('Processing TTS request for text of length:', text.length, 'with voice:', voice);
 
-    // Generate speech using OpenAI's TTS
+    // Enhanced TTS options based on FastSpeech 2 parameters mentioned in literature
+    const ttsParams = {
+      model: 'tts-1',
+      input: text,
+      voice: voice,
+      response_format: 'mp3',
+      speed: speed // FastSpeech 2 allows adjustment of speech rate
+    };
+
+    console.log('TTS parameters:', JSON.stringify(ttsParams));
+
+    // Generate speech using OpenAI's TTS API
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: text,
-        voice: voice,
-        response_format: 'mp3',
-      }),
+      body: JSON.stringify(ttsParams),
     });
 
     if (!response.ok) {

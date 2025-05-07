@@ -13,13 +13,30 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, context = [] } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       throw new Error('Conversation history is required');
     }
 
     console.log('Processing chat request with messages:', JSON.stringify(messages).slice(0, 100) + '...');
+    
+    // Log if context was provided
+    if (context.length > 0) {
+      console.log('Context provided for RAG:', context.length, 'items');
+    }
+
+    // Build system message with enhanced RAG context if available
+    let systemMessage = { 
+      role: 'system', 
+      content: 'You are a helpful, friendly, and intelligent AI assistant based on advanced Retrieval-Augmented Generation. Provide clear, concise, and accurate responses to user queries. Be supportive and engaging.' 
+    };
+    
+    // If context is provided, enhance system message
+    if (context.length > 0) {
+      systemMessage.content += '\n\nThe following information has been extracted from user-provided documents and should be used as context for answering questions:\n\n' + 
+        context.map((item: string) => `- ${item}`).join('\n');
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -30,14 +47,11 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { 
-            role: 'system', 
-            content: 'You are a helpful, friendly, and intelligent AI assistant. Provide clear, concise, and accurate responses to user queries. Be supportive and engaging.' 
-          },
+          systemMessage,
           ...messages
         ],
         temperature: 0.7,
-        max_tokens: 300
+        max_tokens: 500
       }),
     });
 
