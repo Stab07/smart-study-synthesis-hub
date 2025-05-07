@@ -29,7 +29,7 @@ const Chatbot = () => {
     
     // Add user message
     const userMsg = chatMessage.trim();
-    const updatedMessages = [...chatMessages, { sender: 'user', message: userMsg }];
+    const updatedMessages = [...chatMessages, { sender: 'user' as const, message: userMsg }];
     setChatMessages(updatedMessages);
     setChatMessage('');
     setChatLoading(true);
@@ -48,7 +48,7 @@ const Chatbot = () => {
 
       // Add the bot response to chat messages
       const botResponse = data.message;
-      setChatMessages(prev => [...prev, { sender: 'bot', message: botResponse }]);
+      setChatMessages(prev => [...prev, { sender: 'bot' as const, message: botResponse }]);
     } catch (error) {
       console.error('Chatbot Error:', error);
       toast.error("Failed to get chatbot response");
