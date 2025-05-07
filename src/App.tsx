@@ -13,6 +13,7 @@ import AITools from "./pages/AITools";
 import TextToSpeech from "./pages/features/TextToSpeech";
 import Summarization from "./pages/features/Summarization";
 import Chatbot from "./pages/features/Chatbot";
+import IntegratedFeatures from "./pages/features/IntegratedFeatures";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/features/text-to-speech" element={<TextToSpeech />} />
           <Route path="/features/summarization" element={<Summarization />} />
           <Route path="/features/chatbot" element={<Chatbot />} />
+          <Route path="/features/integrated" element={<IntegratedFeatures />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <ChatWidget />

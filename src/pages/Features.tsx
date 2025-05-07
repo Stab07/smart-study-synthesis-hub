@@ -39,9 +39,9 @@ const Features = () => {
     },
     {
       icon: <Sparkles className="h-10 w-10 text-brand-500" />,
-      title: 'Study Tools',
-      description: 'Create flashcards, quizzes, and study guides automatically from your learning materials.',
-      link: '/features/study-tools'
+      title: 'All Features Combined',
+      description: 'Experience all our AI tools in one integrated interface with a helpful AI assistant sidebar.',
+      link: '/features/integrated'
     }
   ];
 
